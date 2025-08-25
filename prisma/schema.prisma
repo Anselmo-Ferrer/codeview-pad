@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id     String  @id @default(uuid())
+  email  String  @unique
+  name   String
+  stacks Stack[]
+}
+
+model Stack {
+  id      String @id @default(uuid())
+  name    String
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  notes   Note[]
+
+  @@unique([userId, name])
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  name      String
+  content   Json
+  stackId   String
+  stack     Stack    @relation(fields: [stackId], references: [id])
+
+  createdAt DateTime @default(now())
+}
