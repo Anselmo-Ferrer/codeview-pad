@@ -73,7 +73,6 @@ import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.scss"
 
-// import content from "@/components/tiptap-templates/simple/data/content.json"
 
 const MainToolbarContent = ({
   onHighlighterClick,
@@ -85,7 +84,7 @@ const MainToolbarContent = ({
   isMobile: boolean
 }) => {
   return (
-    <div className="flex items-center w-full p-0">
+    <>
       <Spacer />
 
       <ToolbarGroup>
@@ -150,7 +149,7 @@ const MainToolbarContent = ({
       <ToolbarGroup>
         <ThemeToggle />
       </ToolbarGroup>
-    </div>
+    </>
   )
 }
 
@@ -244,9 +243,12 @@ export function SimpleEditor({ onUpdate, content }: SimpleEditorProps) {
     },
   })
 
+  const hasInitialized = React.useRef(false)
+
   React.useEffect(() => {
-    if (editor && content) {
-      editor.commands.setContent(content.content ?? content)
+    if (editor && content && !hasInitialized.current) {
+      editor.commands.setContent(content)
+      hasInitialized.current = true
     }
   }, [editor, content])
 

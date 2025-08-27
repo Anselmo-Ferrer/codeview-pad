@@ -5,6 +5,7 @@ import { iconsMap } from "../data/iconsMap"
 import { supabase } from "@/lib/supabaseClient"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 type Stacks = {
   id: string
@@ -16,6 +17,10 @@ export default function Page() {
   const [stackValue, setStackValue] = useState<string>('');
   const [userId, setUserId] = useState<string>('')
   const [stacks, setStacks] = useState<Stacks[]>([])
+  const [searchValue, setSearchValue] = useState<string>('')
+  const [filteredStacks, setFilteredStacks] = useState<Stacks[]>([])
+
+  // ---------- CHECK SESSION ----------
  
   useEffect(() => {
     const checkSession = async () => {
@@ -26,27 +31,32 @@ export default function Page() {
       } else {
         const { id, email } = session.user
         setUserId(id)
-        // setUserEmail(email || '')
-        // setUserId(id || '')
 
         await fetch('/api/sync-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id, email, name: '', password: '' })
         })
-
-        // setLoading(false)
       }
     }
 
     checkSession()
   }, [router])
 
+  // ---------- FILTER ----------
+
   useEffect(() => {
-    if (userId) {
-      fetchStacks()
+    if (!searchValue) {
+      setFilteredStacks(stacks)
+    } else {
+      const filtered = stacks.filter(stack =>
+        stack.name.toLowerCase().includes(searchValue.toLowerCase())
+      )
+      setFilteredStacks(filtered)
     }
-  }, [userId])
+  }, [searchValue, stacks])
+
+  // ---------- POST ----------
 
   const handleAddStack = async () => {
     const res = await fetch('/api/stack', {
@@ -55,8 +65,28 @@ export default function Page() {
       body: JSON.stringify({ name: stackValue, userId})
     })
 
-    console.log("Card criado: ", res)
+    if (!res.ok) {
+      toast("Erro ao criar stack", { style: { background: "red", color: "white" } })
+      return
+    }
+
+    const newStack = await res.json()
+
+    setStacks(prev => [...prev, newStack])
+
+    toast("Stack criada com sucesso", {
+      description: `Sua stack ${stackValue} foi criada!`,
+      style: {
+        background: "linear-gradient(to bottom right, transparent, #04DEAD)",
+        color: "white",
+        backdropFilter: "blur(10px)",
+      }
+    })
+
+    setStackValue('')
   }
+
+  // ---------- GET ----------
 
   const fetchStacks = async () => {
     if (!userId) return;
@@ -75,16 +105,28 @@ export default function Page() {
     console.log("Stacks:", data)
   }
 
+  useEffect(() => {
+    if (userId) {
+      fetchStacks()
+    }
+  }, [userId])
+
   return (
     <div className="p-10">
       <p className="text-4xl font-bold tracking-tighter mb-5">Your Stacks</p>
       <div className="w-full flex items-center gap-3">
-        <input className="border-[#e8e8fd0d] bg-[#e8e8fd0d] backdrop-blur-md border-2 py-2 h-[45px] px-1 w-[500px] outline-none rounded-md plaholder:text-white" placeholder="Search stacks..." type="text" name="" id="" />
+        <input
+          className="border-[#e8e8fd0d] bg-[#e8e8fd0d] backdrop-blur-md border-2 py-2 h-[45px] px-1 w-[500px] outline-none rounded-md placeholder:text-white"
+          placeholder="Search stacks..."
+          type="text"
+          value={searchValue}
+          onChange={e => setSearchValue(e.target.value)}
+        />
         <AddStack onValueChange={(value: string) => setStackValue(value)}/>
         <button onClick={() => handleAddStack()} className="bg-[#e8e8fd0d] backdrop-blur-md border-[#2a2a2a] border hover:bg-[#eeeef61c] h-[45px] px-4 rounded-md cursor-pointer">Adicionar</button>
       </div>
       <div className="flex flex-wrap items-center gap-3 pt-10">
-        {stacks.map(item => {
+        {filteredStacks.map(item => {
           const iconKey = item.name.toLowerCase().replace(/\s+/g, '');
           const iconClass = iconsMap[iconKey] || 'devicon-code-plain text-fit';
           return (
