@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { IoReturnUpBackOutline } from "react-icons/io5";
 
 type Notes = {
   id: string
@@ -50,13 +51,16 @@ export default function Page() {
 
 
   return (
-    <div>
-      <p className="text-4xl">{id}</p>
-      <input onChange={(e) => setNoteName(e.target.value)} type="text" />
-      <button onClick={() => saveNote()} className="bg-blue-700 p-5 cursor-pointer hover:bg-blue-500">Criar nota</button>
-      <div className="flex gap-4">
+    <div className="p-10">
+      <p className="text-4xl font-bold tracking-tighter mb-5">Your Stack Notes</p>
+      <div className="w-full flex items-center gap-3">
+        <button onClick={() => router.back()} className="bg-[#e8e8fd0d] backdrop-blur-md border-[#e8e8fd0d] border hover:bg-[#eeeef61c] h-[45px] px-4 rounded-md cursor-pointer flex items-center gap-1"><IoReturnUpBackOutline size={20}/>Voltar</button>
+        <input onChange={(e) => setNoteName(e.target.value)} className="border-[#e8e8fd0d] bg-[#e8e8fd0d] backdrop-blur-md border-2 py-2 h-[45px] px-1 w-[500px] outline-none rounded-md plaholder:text-white" placeholder="Note name" type="text" name="noteName" id="noteName" />
+        <button onClick={() => saveNote()} className="bg-[#e8e8fd0d] backdrop-blur-md border-[#e8e8fd0d] border hover:bg-[#eeeef61c] h-[45px] px-4 rounded-md cursor-pointer">Adicionar</button>
+      </div>
+      <div className="flex gap-4 py-5">
         {notes.map(item => (
-          <button onClick={() => router.push(`/note/${item.id}`)} key={item.id} className="border-1 p-4 cursor-pointer bg-blue-600">
+          <button onClick={() => router.push(`/note/${item.id}`)} key={item.id} className="p-5 w-full h-12 bg-[#181818] hover:bg-[#2a2a2a] border border-[#2a2a2a] rounded-lg cursor-pointer flex items-center">
             {item.name}
           </button>
         ))}
