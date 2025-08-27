@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,6 +28,7 @@ export default function RootLayout({
         <div className="absolute top-0 left-0 w-[800px] h-[400px] bg-gradient-to-br from-[#04DEAD] to-transparent blur-3xl opacity-30 pointer-events-none" />
         <Navbar />
         {children}
+        <Toaster />
       </body>
     </html>
   );
