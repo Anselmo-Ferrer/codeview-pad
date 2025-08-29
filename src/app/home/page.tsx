@@ -20,28 +20,25 @@ export default function Page() {
   const [searchValue, setSearchValue] = useState<string>('')
   const [filteredStacks, setFilteredStacks] = useState<Stacks[]>([])
 
+  const [user, setUser] = useState<any>(null)
+
   // ---------- CHECK SESSION ----------
  
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+  const checkSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
 
-      if (!session) {
-        router.replace('/signin')
-      } else {
-        const { id, email } = session.user
-        setUserId(id)
-
-        await fetch('/api/sync-user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id, email, name: '', password: '' })
-        })
-      }
+    if (!session?.user) {
+      router.replace('/signin')
+      return
     }
 
-    checkSession()
-  }, [router])
+    setUser(session.user)
+    setUserId(session.user.id)
+  }
+
+  checkSession()
+}, [router])
 
   // ---------- FILTER ----------
 
