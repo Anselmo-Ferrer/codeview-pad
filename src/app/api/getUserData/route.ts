@@ -8,8 +8,8 @@ export async function GET(req: NextRequest) {
     console.log('User ID:', user.id)
 
     // Busca dados do usuário no Prisma
-    const userData = await prisma.test.findMany({
-      where: { user_id: user.id },
+    const userData = await prisma.user.findMany({
+      where: { id: user.id },
     })
 
     return NextResponse.json(userData)

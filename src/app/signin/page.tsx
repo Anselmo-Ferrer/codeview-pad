@@ -7,6 +7,7 @@ import { SiFacebook } from 'react-icons/si'
 import desktopImage from '@/assets/Desktop.png'
 import Image from 'next/image'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -22,27 +23,40 @@ export default function LoginPage() {
   }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+  e.preventDefault()
 
-    const loginRes = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-    const loginData = await loginRes.json()
+  const res = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  })
 
-    if (loginData.error) {
-      alert('Erro ao fazer login: ' + loginData.error.message)
-    } else {
-      const token = loginData.access_token
-      console.log(token)
-      if (token) {
-        router.push(`/home`)
-      } else {
-        alert('Usuário não encontrado.')
-      }
-    }
+  const data = await res.json()
+
+  if (data.error) {
+    alert('Erro ao logar: ' + data.error)
+    return
   }
+
+  // salva tokens no localStorage
+  localStorage.setItem('access_token', data.access_token)
+  localStorage.setItem('refresh_token', data.refresh_token)
+
+  // seta sessão no Supabase
+  await supabase.auth.setSession({
+    access_token: data.access_token,
+    refresh_token: data.refresh_token
+  })
+
+  // sincroniza usuário no backend
+  await fetch('/api/sync-user', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: data.user.id, email: data.user.email })
+  })
+
+  router.push('/home')
+}
 
   return (
     <main className="bg-[#181818] flex w-full h-screen">
